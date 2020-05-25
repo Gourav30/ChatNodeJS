@@ -26,13 +26,13 @@ let userSchema = new Schema(
             type: String,
             default: ''
         },
-        mobileNumber : {
-            type : Number,
-            default : 0
+        mobileNumber: {
+            type: Number,
+            default: 0
         },
-        created: {
+        createdOn: {
             type: Date,
-            default: Date.now()
+            default: ""
         }
     }
 )

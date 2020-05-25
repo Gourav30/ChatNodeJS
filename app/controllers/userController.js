@@ -63,7 +63,7 @@ let signUpFunction = (req, res) => {
                             email: req.body.email.toLowerCase(),
                             mobileNumber: req.body.mobileNumber,
                             password: passwordLib.hashpassword(req.body.password),
-                            created: time.now()
+                            createdOn: time.now()
                         })
                         newUser.save((err, newUser) => {
                             if (err) {
