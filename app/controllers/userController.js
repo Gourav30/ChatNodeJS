@@ -13,9 +13,25 @@ const AuthModel = mongoose.model('auth')
 const UserModel = mongoose.model('User')
 
 let getAllUser = (req, res) => {
-
-
-} //  end of get all user function
+    UserModel.find()
+        .select(' -__v -_id')
+        .lean()
+        .exec((err, result) => {
+            if (err) {
+                console.log(err)
+                logger.error(err.message, 'User Controller: getAllUser', 10)
+                let apiResponse = response.generate(true, 'Failed To Find User Details', 500, null)
+                res.send(apiResponse)
+            } else if (check.isEmpty(result)) {
+                logger.info('No User Found', 'User Controller: getAllUser')
+                let apiResponse = response.generate(true, 'No User Found', 404, null)
+                res.send(apiResponse)
+            } else {
+                let apiResponse = response.generate(false, 'All User Details Found', 200, result)
+                res.send(apiResponse)
+            }
+        })
+}// end get all users //  end of get all user function
 
 let getSingleUser = (req, res) => {
 
@@ -48,13 +64,14 @@ let signUpFunction = (req, res) => {
     }// end validate user input
     let createUser = () => {
         return new Promise((resolve, reject) => {
-            UserModel.findOne({ email: req.body.email })
-                .exec((err, retrievedUserDetails) => {
+            console.log("im in promise")
+            UserModel.findOne({ email: req.body.email }), ((err, retrievedUserDetails) => {
+                    console.log("im in .exec")
                     if (err) {
                         logger.error(err.message, 'userController: createUser', 10)
                         let apiResponse = response.generate(true, 'Failed To Create User', 500, null)
                         reject(apiResponse)
-                    } else if (check.isEmpty(retrievedUserDetails)) {
+                    } else if (retrievedUserDetails) {
                         console.log(req.body)
                         let newUser = new UserModel({
                             userId: shortid.generate(),
