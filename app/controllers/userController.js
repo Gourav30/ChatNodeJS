@@ -65,41 +65,40 @@ let signUpFunction = (req, res) => {
     let createUser = () => {
         return new Promise((resolve, reject) => {
             console.log("im in promise")
-            UserModel.findOne({ email: req.body.email })
-            .exec((err, retrievedUserDetails) => {
-                    console.log("im in .exec")
-                    if (err) {
-                        logger.error(err.message, 'userController: createUser', 10)
-                        let apiResponse = response.generate(true, 'Failed To Create User', 500, null)
-                        reject(apiResponse)
-                    } else if (retrievedUserDetails) {
-                        console.log(req.body)
-                        let newUser = new UserModel({
-                            userId: shortid.generate(),
-                            firstName: req.body.firstName,
-                            lastName: req.body.lastName || '',
-                            email: req.body.email.toLowerCase(),
-                            mobileNumber: req.body.mobileNumber,
-                            password: passwordLib.hashpassword(req.body.password),
-                            createdOn: time.now()
-                        })
-                        newUser.save((err, newUser) => {
-                            if (err) {
-                                console.log(err)
-                                logger.error(err.message, 'userController: createUser', 10)
-                                let apiResponse = response.generate(true, 'Failed to create new User', 500, null)
-                                reject(apiResponse)
-                            } else {
-                                let newUserObj = newUser.toObject();
-                                resolve(newUserObj)
-                            }
-                        })
-                    } else {
-                        logger.error('User Cannot Be Created.User Already Present', 'userController: createUser', 4)
-                        let apiResponse = response.generate(true, 'User Already Present With this Email', 403, null)
-                        reject(apiResponse)
-                    }
-                })
+            UserModel.findOne({ email: req.body.email }, (err, createUser) => {
+                console.log("im in findone")
+                if (err) {
+                    logger.error(err.message, 'userController: createUser', 10)
+                    let apiResponse = response.generate(true, 'Failed To Create User', 500, null)
+                    reject(apiResponse)
+                } else if (createUser) {
+                    console.log(req.body)
+                    let newUser = new UserModel({
+                        userId: shortid.generate(),
+                        firstName: req.body.firstName,
+                        lastName: req.body.lastName || '',
+                        email: req.body.email.toLowerCase(),
+                        mobileNumber: req.body.mobileNumber,
+                        password: passwordLib.hashpassword(req.body.password),
+                        createdOn: time.now()
+                    })
+                    newUser.save((err, newUser) => {
+                        if (err) {
+                            console.log(err)
+                            logger.error(err.message, 'userController: createUser', 10)
+                            let apiResponse = response.generate(true, 'Failed to create new User', 500, null)
+                            reject(apiResponse)
+                        } else {
+                            let newUserObj = newUser.toObject();
+                            resolve(newUserObj)
+                        }
+                    })
+                } else {
+                    logger.error('User Cannot Be Created.User Already Present', 'userController: createUser', 4)
+                    let apiResponse = response.generate(true, 'User Already Present With this Email', 403, null)
+                    reject(apiResponse)
+                }
+            })
         })
     }// end create user function
 
