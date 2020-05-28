@@ -65,7 +65,8 @@ let signUpFunction = (req, res) => {
     let createUser = () => {
         return new Promise((resolve, reject) => {
             console.log("im in promise")
-            UserModel.findOne({ email: req.body.email }), ((err, retrievedUserDetails) => {
+            UserModel.findOne({ email: req.body.email })
+            .exec((err, retrievedUserDetails) => {
                     console.log("im in .exec")
                     if (err) {
                         logger.error(err.message, 'userController: createUser', 10)
