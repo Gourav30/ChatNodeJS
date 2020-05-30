@@ -19,7 +19,7 @@ let isAuthorized = (req, res, next) => {
         res.send(apiResponse)
       } else if (check.isEmpty(authDetails)) {
         logger.error('No AuthorizationKey Is Present', 'AuthorizationMiddleware', 10)
-        let apiResponse = responseLib.generate(true, 'Invalid Or Expired AuthorizationKey', 404, null)
+        let apiResponse = responseLib.generate(true, 'Invalid Or Expired Authorization Key', 404, null)
         res.send(apiResponse)
       } else {
         token.verifyToken(authDetails.authToken,authDetails.tokenSecret,(err,decoded)=>{

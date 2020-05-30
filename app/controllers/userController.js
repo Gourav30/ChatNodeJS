@@ -34,8 +34,24 @@ let getAllUser = (req, res) => {
 }// end get all users //  end of get all user function
 
 let getSingleUser = (req, res) => {
-
-
+    UserModel.findOne({ 'userId': req.params.userId })
+    .select('-password -__v -_id')
+    .lean()
+    .exec((err, result) => {
+        if (err) {
+            console.log(err)
+            logger.error(err.message, 'User Controller: getSingleUser', 10)
+            let apiResponse = response.generate(true, 'Failed To Find User Details', 500, null)
+            res.send(apiResponse)
+        } else if (check.isEmpty(result)) {
+            logger.info('No User Found', 'User Controller:getSingleUser')
+            let apiResponse = response.generate(true, 'No User Found', 404, null)
+            res.send(apiResponse)
+        } else {
+            let apiResponse = response.generate(false, 'User Details Found', 200, result)
+            res.send(apiResponse)
+        }
+    })
 }  // end of get single user information
 
 
@@ -65,12 +81,13 @@ let signUpFunction = (req, res) => {
     let createUser = () => {
         return new Promise((resolve, reject) => {
             console.log("im in promise")
-            UserModel.findOne({ email: req.body.email }, (err, createUser) => {
-                console.log("im in findone")
+            UserModel.findOne({ email: req.body.email })
+            .exec((err, retrievedUserDetails) => {
+                console.log("im in findOne")
                 if (err) {
                     logger.error(err.message, 'userController: createUser', 10)
                     let apiResponse = response.generate(true, 'Failed To Create User', 500, null)
-                    reject(apiResponse)
+                    reject(check.isEmpty(retrievedUserDetails))
                 } else if (createUser) {
                     console.log(req.body)
                     let newUser = new UserModel({
@@ -135,7 +152,7 @@ let loginFunction = (req, res) => {
                         reject(apiResponse)
                     } else if (check.isEmpty(userDetails)) {
                         logger.error('No User Found', 'userController: findUser()', 5)
-                        let apiResponse = response.generate(true, 'No User Details Found', 404, null)
+                        let apiResponse = response.generate(true, 'No User Details Found with Email ID', 404, null)
                         reject(apiResponse)
                     } else {
                         logger.info('User Found', 'userController: findUser()', 10)
@@ -168,7 +185,7 @@ let loginFunction = (req, res) => {
                     resolve(retrievedUserDetailsObj)
                 } else {
                     logger.info('Login Failed Due To Invalid Password', 'userController: validatePassword()', 10)
-                    let apiResponse = response.generate(true, 'Wrong Password.Login Failed', 400, null)
+                    let apiResponse = response.generate(true, 'You have entered Wrong Password. Login Failed', 400, null)
                     reject(apiResponse)
                 }
             })
@@ -218,6 +235,26 @@ let logoutFunction = (req, res) => {
 
 } // end of the logout function.
 
+let deleteUser = (req, res) => {
+
+    UserModel.findOneAndRemove({ 'userId': req.params.userId }).exec((err, result) => {
+        if (err) {
+            console.log(err)
+            logger.error(err.message, 'User Controller: deleteUser', 10)
+            let apiResponse = response.generate(true, 'Failed To delete user', 500, null)
+            res.send(apiResponse)
+        } else if (check.isEmpty(result)) {
+            logger.info('No User Found', 'User Controller: deleteUser')
+            let apiResponse = response.generate(true, 'No User Found', 404, null)
+            res.send(apiResponse)
+        } else {
+            let apiResponse = response.generate(false, 'Deleted the user successfully', 200, result)
+            res.send(apiResponse)
+        }
+    });// end user model find and remove
+
+
+}// end delete user
 
 
 
@@ -226,5 +263,6 @@ module.exports = {
     getSingleUser: getSingleUser,
     signUpFunction: signUpFunction,
     loginFunction: loginFunction,
-    logoutFunction: logoutFunction
+    logoutFunction: logoutFunction,
+    deleteUser: deleteUser
 }
