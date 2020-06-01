@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken')
 const shortid = require('shortid')
-const secretKey = 'someVeryRandomStringThatNobodyCanGuess';
+const secretKey = 'SomeSecretKeyForTokenSecret';
 
 
 let generateToken = (data, cb) => {
@@ -9,7 +9,7 @@ let generateToken = (data, cb) => {
     let claims = {
       jwtid: shortid.generate(),
       iat: Date.now(),
-      exp: Math.floor(Date.now() / 1000) + (60 * 60 * 24),
+      exp: Math.floor(Date.now() / 8000) + (60 * 60 * 24),
       sub: 'authToken',
       iss: 'edChat',
       data: data

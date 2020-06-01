@@ -35,23 +35,23 @@ let getAllUser = (req, res) => {
 
 let getSingleUser = (req, res) => {
     UserModel.findOne({ 'userId': req.params.userId })
-    .select('-password -__v -_id')
-    .lean()
-    .exec((err, result) => {
-        if (err) {
-            console.log(err)
-            logger.error(err.message, 'User Controller: getSingleUser', 10)
-            let apiResponse = response.generate(true, 'Failed To Find User Details', 500, null)
-            res.send(apiResponse)
-        } else if (check.isEmpty(result)) {
-            logger.info('No User Found', 'User Controller:getSingleUser')
-            let apiResponse = response.generate(true, 'No User Found', 404, null)
-            res.send(apiResponse)
-        } else {
-            let apiResponse = response.generate(false, 'User Details Found', 200, result)
-            res.send(apiResponse)
-        }
-    })
+        .select('-password -__v -_id')
+        .lean()
+        .exec((err, result) => {
+            if (err) {
+                console.log(err)
+                logger.error(err.message, 'User Controller: getSingleUser', 10)
+                let apiResponse = response.generate(true, 'Failed To Find User Details', 500, null)
+                res.send(apiResponse)
+            } else if (check.isEmpty(result)) {
+                logger.info('No User Found', 'User Controller:getSingleUser')
+                let apiResponse = response.generate(true, 'No User Found', 404, null)
+                res.send(apiResponse)
+            } else {
+                let apiResponse = response.generate(false, 'User Details Found', 200, result)
+                res.send(apiResponse)
+            }
+        })
 }  // end of get single user information
 
 
@@ -82,40 +82,40 @@ let signUpFunction = (req, res) => {
         return new Promise((resolve, reject) => {
             console.log("im in promise")
             UserModel.findOne({ email: req.body.email })
-            .exec((err, retrievedUserDetails) => {
-                console.log("im in findOne")
-                if (err) {
-                    logger.error(err.message, 'userController: createUser', 10)
-                    let apiResponse = response.generate(true, 'Failed To Create User', 500, null)
-                    reject(check.isEmpty(retrievedUserDetails))
-                } else if (createUser) {
-                    console.log(req.body)
-                    let newUser = new UserModel({
-                        userId: shortid.generate(),
-                        firstName: req.body.firstName,
-                        lastName: req.body.lastName || '',
-                        email: req.body.email.toLowerCase(),
-                        mobileNumber: req.body.mobileNumber,
-                        password: passwordLib.hashpassword(req.body.password),
-                        createdOn: time.now()
-                    })
-                    newUser.save((err, newUser) => {
-                        if (err) {
-                            console.log(err)
-                            logger.error(err.message, 'userController: createUser', 10)
-                            let apiResponse = response.generate(true, 'Failed to create new User', 500, null)
-                            reject(apiResponse)
-                        } else {
-                            let newUserObj = newUser.toObject();
-                            resolve(newUserObj)
-                        }
-                    })
-                } else {
-                    logger.error('User Cannot Be Created.User Already Present', 'userController: createUser', 4)
-                    let apiResponse = response.generate(true, 'User Already Present With this Email', 403, null)
-                    reject(apiResponse)
-                }
-            })
+                .exec((err, retrievedUserDetails) => {
+                    console.log("im in findOne")
+                    if (err) {
+                        logger.error(err.message, 'userController: createUser', 10)
+                        let apiResponse = response.generate(true, 'Failed To Create User', 500, null)
+                        reject(apiResponse)
+                    } else if (check.isEmpty(retrievedUserDetails)) {
+                        console.log(req.body)
+                        let newUser = new UserModel({
+                            userId: shortid.generate(),
+                            firstName: req.body.firstName,
+                            lastName: req.body.lastName || '',
+                            email: req.body.email.toLowerCase(),
+                            mobileNumber: req.body.mobileNumber,
+                            password: passwordLib.hashpassword(req.body.password),
+                            createdOn: time.now()
+                        })
+                        newUser.save((err, newUser) => {
+                            if (err) {
+                                console.log(err)
+                                logger.error(err.message, 'userController: createUser', 10)
+                                let apiResponse = response.generate(true, 'Failed to create new User', 500, null)
+                                reject(apiResponse)
+                            } else {
+                                let newUserObj = newUser.toObject();
+                                resolve(newUserObj)
+                            }
+                        })
+                    } else {
+                        logger.error('User Cannot Be Created.User Already Present', 'userController: createUser', 4)
+                        let apiResponse = response.generate(true, 'User Already Present With this Email', 403, null)
+                        reject(apiResponse)
+                    }
+                })
         })
     }// end create user function
 
@@ -207,12 +207,67 @@ let loginFunction = (req, res) => {
                 }
             })
         })
-    }
+    } // end of generate Token
+
+    let saveToken = (tokenDetails) => {
+        console.log("Save Token")
+        return new Promise((resolve, reject) => {
+            AuthModel.findOne({ userId: tokenDetails.userId }, (err, retrivedTokenDetails) => {
+                if (err) {
+                    console.log(err.message, "UserController : Save Token", 10)
+                    let apiResponse = response.generate(true, "Failed to generate Token", 500, null)
+                    reject(apiResponse)
+                } else if (check.isEmpty(retrivedTokenDetails)) {
+                    let newAuthToken = new AuthModel({
+                        userId: tokenDetails.userId,
+                        authToken: tokenDetails.token,
+                        tokenSecret: tokenDetails.tokenSecret,
+                        tokenGenerationTime: time.now()
+                    })
+                    newAuthToken.save((err, newTokenDetails) => {
+                        if (err) {
+                            console.log(err)
+                            logger.error(err.message, "userController : saveToken", 10)
+                            let apiResponse = response.generate(true, "Failed to generate Token", 500, null)
+                            reject(apiResponse)
+                        } else {
+                            let responseBody = {
+                                authToken: newTokenDetails.authToken,
+                                userDetails: newTokenDetails.userDetails
+                            }
+                            resolve(responseBody)
+                        }
+                    })
+                } else {
+                    retrivedTokenDetails.authToken = tokenDetails.token
+                    retrivedTokenDetails.tokenSecret = tokenDetails.tokenSecret
+                    retrivedTokenDetails.tokenGenerationTime = time.now()
+                    retrivedTokenDetails.save((err, newTokenDetails) => {
+                        if (err) {
+                            console.log(err)
+                            logger.error(err.message, 'userController: saveToken', 10)
+                            let apiResponse = response.generate(true, 'Failed To Generate Token', 500, null)
+                            reject(apiResponse)
+                        } else {
+                            let responseBody = {
+                                authToken: newTokenDetails.authToken,
+                                userDetails: tokenDetails.userDetails
+                            }
+                            resolve(responseBody)
+                        }
+                    })
+                }
+            })
+        })
+
+
+    } // end of Save Token
 
 
     findUser(req, res)
         .then(validatePassword)
         .then(generateToken)
+        .then(saveToken)
         .then((resolve) => {
             let apiResponse = response.generate(false, 'Login Successful', 200, resolve)
             res.status(200)
@@ -232,8 +287,23 @@ let loginFunction = (req, res) => {
 
 
 let logoutFunction = (req, res) => {
+    AuthModel.findOneAndRemove({userId: req.user.userId}, (err, result) => {
+      if (err) {
+          console.log(err)
+          logger.error(err.message, 'user Controller: logout', 10)
+          let apiResponse = response.generate(true, `error occurred: ${err.message}`, 500, null)
+          res.send(apiResponse)
+      } else if (check.isEmpty(result)) {
+          let apiResponse = response.generate(true, 'Already Logged Out or Invalid UserId', 404, null)
+          res.send(apiResponse)
+      } else {
+          let apiResponse = response.generate(false, 'Logged Out Successfully', 200, null)
+          res.send(apiResponse)
+      }
+    })
+  } // end of the logout function.
 
-} // end of the logout function.
+
 
 let deleteUser = (req, res) => {
 
@@ -248,7 +318,20 @@ let deleteUser = (req, res) => {
             let apiResponse = response.generate(true, 'No User Found', 404, null)
             res.send(apiResponse)
         } else {
+
             let apiResponse = response.generate(false, 'Deleted the user successfully', 200, result)
+            // delete data.userId
+            // delete apiResponse.data.password
+
+            // let apiResponse = result.toObject();
+            // // delete apiResponse.userId
+            // delete apiResponse.password
+            // delete apiResponse.createdOn
+            // delete apiResponse._id
+            // delete apiResponse.__v
+
+            // let finalResult = response.generate(false, 'Deleted the user successfully', 200, result)
+
             res.send(apiResponse)
         }
     });// end user model find and remove
@@ -256,6 +339,9 @@ let deleteUser = (req, res) => {
 
 }// end delete user
 
+let editUser = (req, res) => {
+
+}
 
 
 module.exports = {
@@ -264,5 +350,6 @@ module.exports = {
     signUpFunction: signUpFunction,
     loginFunction: loginFunction,
     logoutFunction: logoutFunction,
+    editUser: editUser,
     deleteUser: deleteUser
 }
