@@ -14,11 +14,11 @@ let isAuthorized = (req, res, next) => {
     auth.findOne({authToken: req.header('authToken') || req.params.authToken || req.body.authToken || req.query.authToken}, (err, authDetails) => {
       if (err) {
         console.log(err)
-        logger.error(err.message, 'AuthorizationMiddleware', 10)
-        let apiResponse = responseLib.generate(true, 'Failed To Authorized', 500, null)
+        logger.error(err.message, 'Authorization Middleware', 10)
+        let apiResponse = responseLib.generate(true, 'Failed To Find Authorization Key', 500, null)
         res.send(apiResponse)
       } else if (check.isEmpty(authDetails)) {
-        logger.error('No AuthorizationKey Is Present', 'AuthorizationMiddleware', 10)
+        logger.error('No AuthorizationKey Is Present', 'Authorization Middleware', 10)
         let apiResponse = responseLib.generate(true, 'Invalid Or Expired Authorization Key', 404, null)
         res.send(apiResponse)
       } else {
