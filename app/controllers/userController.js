@@ -19,11 +19,11 @@ let getAllUser = (req, res) => {
         .exec((err, result) => {
             if (err) {
                 console.log(err)
-                logger.error(err.message, 'User Controller: getAllUser', 10)
+                logger.error(err.message, 'UserController  getAllUser', 10)
                 let apiResponse = response.generate(true, 'Failed To Find User Details', 500, null)
                 res.send(apiResponse)
             } else if (check.isEmpty(result)) {
-                logger.info('No User Found', 'User Controller: getAllUser')
+                logger.info('No User Found', 'UserController : getAllUser')
                 let apiResponse = response.generate(true, 'No User Found', 404, null)
                 res.send(apiResponse)
             } else {
@@ -40,11 +40,11 @@ let getSingleUser = (req, res) => {
         .exec((err, result) => {
             if (err) {
                 console.log(err)
-                logger.error(err.message, 'User Controller: getSingleUser', 10)
+                logger.error(err.message, 'UserController : getSingleUser', 10)
                 let apiResponse = response.generate(true, 'Failed To Find User Details', 500, null)
                 res.send(apiResponse)
             } else if (check.isEmpty(result)) {
-                logger.info('No User Found', 'User Controller:getSingleUser')
+                logger.info('No User Found', 'UserController : getSingleUser')
                 let apiResponse = response.generate(true, 'No User Found', 404, null)
                 res.send(apiResponse)
             } else {
@@ -72,7 +72,7 @@ let signUpFunction = (req, res) => {
                     resolve(req)
                 }
             } else {
-                logger.error('Field Missing During User Creation', 'userController: createUser()', 5)
+                logger.error('Field Missing During User Creation', 'userController: validateUserInput()', 5)
                 let apiResponse = response.generate(true, 'One or More Parameter(s) is missing', 400, null)
                 reject(apiResponse)
             }
@@ -287,30 +287,30 @@ let loginFunction = (req, res) => {
 
 
 let logoutFunction = (req, res) => {
-    AuthModel.findOneAndRemove({userId: req.user.userId}, (err, result) => {
-      if (err) {
-          console.log(err)
-          logger.error(err.message, 'user Controller: logout', 10)
-          let apiResponse = response.generate(true, `error occurred: ${err.message}`, 500, null)
-          res.send(apiResponse)
-      } else if (check.isEmpty(result)) {
-          let apiResponse = response.generate(true, 'Already Logged Out or Invalid UserId', 404, null)
-          res.send(apiResponse)
-      } else {
-          let apiResponse = response.generate(false, 'Logged Out Successfully', 200, null)
-          res.send(apiResponse)
-      }
+    AuthModel.findOneAndRemove({ userId: req.user.userId }, (err, result) => {
+        if (err) {
+            console.log(err)
+            logger.error(err.message, 'userController: logout', 10)
+            let apiResponse = response.generate(true, `error occurred: ${err.message}`, 500, null)
+            res.send(apiResponse)
+        } else if (check.isEmpty(result)) {
+            let apiResponse = response.generate(true, 'Already Logged Out or Invalid UserId', 404, null)
+            res.send(apiResponse)
+        } else {
+            let apiResponse = response.generate(false, 'Logged Out Successfully', 200, null)
+            res.send(apiResponse)
+        }
     })
-  } // end of the logout function.
+} // end of the logout function.
 
 
 
 let deleteUser = (req, res) => {
 
-    UserModel.findOneAndRemove({ 'userId': req.params.userId }).exec((err, result) => {
+    UserModel.remove({ 'userId': req.params.userId }).exec((err, result) => {
         if (err) {
             console.log(err)
-            logger.error(err.message, 'User Controller: deleteUser', 10)
+            logger.error(err.message, 'UserController: deleteUser', 10)
             let apiResponse = response.generate(true, 'Failed To delete user', 500, null)
             res.send(apiResponse)
         } else if (check.isEmpty(result)) {
@@ -341,7 +341,23 @@ let deleteUser = (req, res) => {
 
 let editUser = (req, res) => {
 
-}
+    console.log("UserController : editUser is called")
+    UserModel.findOneAndUpdate({ 'userId': req.params.userId }, Options).exec((err, data) => {
+        if (err) {
+            console.log(err)
+            logger.error(err.message, 'UserController : editUser', 10)
+            let apiResponse = response.generate(true, "failed to edit user details", 500, null)
+            res.send(apiResponse)
+        } else if (check.isEmpty(data)) {
+            logger.info('No user Found', "UserController : editUser")
+            let apiResponse = response.generate(true, "No User Found", 404, null)
+            res.send(apiResponse)
+        } else {
+            let apiResponse = response.generate(false, "User Editted Successfully", 200, data)
+            res.send(apiResponse)
+        }
+    })
+} // end of edit user
 
 
 module.exports = {
@@ -350,6 +366,7 @@ module.exports = {
     signUpFunction: signUpFunction,
     loginFunction: loginFunction,
     logoutFunction: logoutFunction,
-    editUser: editUser,
-    deleteUser: deleteUser
+    deleteUser: deleteUser,
+    editUser: editUser
+
 }

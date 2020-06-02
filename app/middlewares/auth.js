@@ -2,7 +2,6 @@ const mongoose = require('mongoose')
 const jwt = require('jsonwebtoken')
 const request = require("request")
 const auth = mongoose.model('auth')
-
 const logger = require('./../library/logLib')
 const responseLib = require('../library/responseLib')
 const token = require('../library/tokenLib')
@@ -35,7 +34,7 @@ let isAuthorized = (req, res, next) => {
                 next()
             }
 
-        });// end verify token
+        });// end of verifying token
 
       }
     })
