@@ -13,15 +13,15 @@ const mongoose = require('mongoose');
 const morgan = require('morgan');
 
 
+
 app.use(morgan('dev'));
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+
 app.use(routeLoggerMiddleware.logIp);
 app.use(globalErrorMiddleware.globalErrorhandler);
-
 
 app.use(express.static(path.join(__dirname, 'client')));
 
@@ -31,6 +31,7 @@ const controllersPath = './app/controllers';
 const libsPath = './app/library';
 const middlewaresPath = './app/middlewares';
 const routesPath = './app/routes';
+
 
 app.all('*', function(req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
@@ -74,6 +75,14 @@ server.on('error', onError);
 server.on('listening', onListening);
 
 // end server listening code
+
+
+// Socket io listning
+const socketLib = require('./app/library/socketLib')
+const socketServer = socketLib.setServer(server)
+
+// end of Socker io connection listning
+
 
 /**
  * Event listener for HTTP server "error" event.
