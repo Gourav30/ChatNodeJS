@@ -8,7 +8,7 @@ module.exports.setRouter = (app) => {
 
     let baseUrl = `${appConfig.apiVersion}/users`;
 
-    app.get(`${baseUrl}/view/all`, Authorized.isAuthorized, userController.getAllUser);
+    app.get(`${baseUrl}/view/all`, userController.getAllUser);
 
     // params: userId.
     app.get(`${baseUrl}/:userId/details`, Authorized.isAuthorized, userController.getSingleUser);
