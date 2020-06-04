@@ -58,10 +58,10 @@ let setServer = (server) => {
 
             console.log("user is disconnected");
             // console.log(socket.connectorName);
-            // console.log(socket.userId);
-            // var removeIndex = allOnlineUsers.map(function (user) { return user.userId; }).indexOf(socket.userId);
-            // allOnlineUsers.splice(removeIndex, 1)
-            // console.log(allOnlineUsers)
+            console.log(socket.userId);
+            var removeIndex = allOnlineUsers.map(function (user) { return user.userId; }).indexOf(socket.userId);
+            allOnlineUsers.splice(removeIndex, 1)
+            console.log(allOnlineUsers)
 
         }) // end of on disconnect
     });

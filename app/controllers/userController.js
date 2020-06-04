@@ -259,8 +259,6 @@ let loginFunction = (req, res) => {
                 }
             })
         })
-
-
     } // end of Save Token
 
 
@@ -279,7 +277,6 @@ let loginFunction = (req, res) => {
             res.status(err.status)
             res.send(err)
         })
-
 }
 
 
