@@ -236,6 +236,7 @@ let loginFunction = (req, res) => {
                                 userDetails: newTokenDetails.userDetails
                             }
                             resolve(responseBody)
+
                         }
                     })
                 } else {
@@ -246,7 +247,7 @@ let loginFunction = (req, res) => {
                         if (err) {
                             console.log(err)
                             logger.error(err.message, 'userController: saveToken', 10)
-                            let apiResponse = response.generate(true, 'Failed To Generate Token', 500, null)
+                            let apiResponse = response.generate(true, 'Failed To Generate Token', 501, null)
                             reject(apiResponse)
                         } else {
                             let responseBody = {
@@ -261,6 +262,7 @@ let loginFunction = (req, res) => {
         })
     } // end of Save Token
 
+    //console.log(saveToken)
 
     findUser(req, res)
         .then(validatePassword)
